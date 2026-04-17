@@ -57,18 +57,31 @@ jobs:
         run: |
           PR_CONTEXT=$(cat /tmp/pr-context.txt)
 
-          REVIEW=$(kiro-cli chat \
+          kiro-cli chat \
             --no-interactive \
             --agent code-reviewer \
-            --trust-tools=read,grep \
+            --trust-all-tools \
             "Review the code changes in this pull request. Here is the diff context:
 
           ${PR_CONTEXT}
 
-          Focus on the changed files. Read each changed file fully before reviewing. Provide actionable feedback organized by severity.")
+          Focus on the changed files. Read each changed file fully before reviewing. Provide actionable feedback organized by severity." > /tmp/kiro-raw.txt 2>&1 || true
 
-          # Write review to file (handles multiline safely)
-          echo "$REVIEW" > /tmp/kiro-review.md
+          # Strip ANSI escape codes
+          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/kiro-raw.txt > /tmp/kiro-stripped.txt
+
+          # Extract only the review content: drop tool invocation noise, keep markdown
+          # Remove lines that are Kiro CLI tool output (reading files, subagent invocations, etc.)
+          sed -E \
+            -e '/^(Reading |Batch |↱ |⋮ |Invoking |[0-9]+\. .*kiro_default)/d' \
+            -e '/^(✓ |Successfully |> )/d' \
+            -e '/^\(using tool:/d' \
+            -e '/^- Completed in/d' \
+            -e '/^- Summary:/d' \
+            /tmp/kiro-stripped.txt > /tmp/kiro-review.md
+
+          # Final cleanup: remove empty lines at the start
+          sed -i '/./,$!d' /tmp/kiro-review.md
 
       - name: Post review as PR comment
         uses: actions/github-script@v7
@@ -76,8 +89,15 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const review = fs.readFileSync('/tmp/kiro-review.md', 'utf8');
+            let review = fs.readFileSync('/tmp/kiro-review.md', 'utf8');
             const fileCount = '${{ steps.diff.outputs.file_count }}';
+
+            // Strip any remaining ANSI escape codes
+            review = review.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
+            // Strip unicode box-drawing and status characters
+            review = review.replace(/[━↱⋮]/g, '');
+            // Clean up excessive blank lines
+            review = review.replace(/\n{3,}/g, '\n\n');
 
             const body = [
               '## 🤖 Kiro Code Review',

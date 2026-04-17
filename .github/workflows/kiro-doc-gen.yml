@@ -32,7 +32,7 @@ jobs:
           kiro-cli chat \
             --no-interactive \
             --agent doc-generator \
-            --trust-tools=read,grep,write \
+            --trust-all-tools \
             "Scan this repository and update the documentation. If docs/ directory exists, update files there. If README.md exists, update it with any new public APIs or changed interfaces. Create documentation for any undocumented public modules."
 
       - name: Push documentation updates
