@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: ../nodejs-app
+      dockerfile: ../docker/Dockerfile
+    ports:
+      - "3000:3000"
+      - "22:22"       # ISSUE: Exposing SSH in a container
+      - "9229:9229"   # ISSUE: Exposing Node.js debug port in production
+    environment:
+      - DB_HOST=db
+      - DB_USER=admin
+      - DB_PASSWORD=SuperSecret123!  # ISSUE: Hardcoded secret in compose file
+      - JWT_SECRET=my-super-secret-jwt-key-do-not-share
+      - NODE_ENV=production
+    depends_on:
+      - db
+    # ISSUE: No resource limits (memory, CPU)
+    # ISSUE: No restart policy
+    # ISSUE: No read-only filesystem
+    # ISSUE: Running as privileged
+    privileged: true
+    networks:
+      - app-network
+
+  db:
+    image: mysql:5.7  # ISSUE: End-of-life MySQL version
+    ports:
+      - "3306:3306"   # ISSUE: Database port exposed to host
+    environment:
+      MYSQL_ROOT_PASSWORD: SuperSecret123!  # ISSUE: Hardcoded
+      MYSQL_DATABASE: kiro_demo
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: SuperSecret123!
+    volumes:
+      - db-data:/var/lib/mysql
+    # ISSUE: No health check
+    # ISSUE: No resource limits
+    networks:
+      - app-network
+
+  # ISSUE: Redis with no password
+  cache:
+    image: redis:latest  # ISSUE: Unpinned version
+    ports:
+      - "6379:6379"      # ISSUE: Redis exposed to host with no auth
+    # ISSUE: No persistence configuration
+    # ISSUE: No resource limits
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+    # ISSUE: No driver options, no backup strategy
+
+networks:
+  app-network:
+    driver: bridge
+    # ISSUE: No network encryption or isolation configuration
