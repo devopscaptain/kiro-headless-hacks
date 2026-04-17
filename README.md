@@ -119,6 +119,42 @@ This repo includes intentionally flawed sample code across three stacks so the K
 | Reliability | No health checks, no resource limits, no restart policy, `latest` tags |
 | Build quality | No multi-stage build, no `.dockerignore`, `npm install` instead of `npm ci` |
 
+## Documentation
+
+Detailed documentation is available in the [`docs/`](docs/) directory:
+
+| Document | Description |
+|----------|-------------|
+| [API Reference](docs/API.md) | Full REST API documentation — endpoints, parameters, request/response formats |
+| [Architecture](docs/ARCHITECTURE.md) | Project structure, component interaction diagrams, dependency map |
+| [Deployment](docs/DEPLOYMENT.md) | Docker, Docker Compose, Terraform, and local development setup |
+| [Known Issues](docs/KNOWN_ISSUES.md) | Catalog of intentional vulnerabilities and anti-patterns by severity |
+
+### API Quick Reference
+
+The Node.js demo exposes these endpoints on port 3000:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/register` | Register a new user |
+| `POST` | `/api/auth/login` | Authenticate and get JWT |
+| `GET` | `/api/users` | List all users |
+| `GET` | `/api/users/:id` | Get user by ID |
+| `PUT` | `/api/users/:id` | Update user |
+| `DELETE` | `/api/users/:id` | Delete user |
+| `POST` | `/api/users/:id/avatar` | Upload avatar (multipart) |
+| `GET` | `/api/products` | List all products |
+| `GET` | `/api/products/search` | Search with filters |
+| `POST` | `/api/products` | Create product |
+| `GET` | `/api/products/stats` | Product stats with reviews |
+
+### Exported Modules
+
+| Module | Exports | Description |
+|--------|---------|-------------|
+| `src/db.js` | `connection`, `connectDB`, `query` | MySQL connection and query helper |
+| `src/middleware/auth.js` | `authenticate`, `requireRole` | JWT verification and role-based access middleware |
+
 ## Links
 
 - [Kiro Headless Mode docs](https://kiro.dev/docs/cli/headless/)
