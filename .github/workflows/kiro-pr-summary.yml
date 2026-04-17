@@ -16,7 +16,7 @@ jobs:
   summarize:
     name: Generate PR Summary
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
@@ -30,19 +30,16 @@ jobs:
       - name: Collect PR metadata
         id: meta
         run: |
-          FILES=$(git diff origin/${{ github.event.pull_request.base.ref }}...HEAD --name-only)
           STAT=$(git diff origin/${{ github.event.pull_request.base.ref }}...HEAD --stat)
           COMMITS=$(git log origin/${{ github.event.pull_request.base.ref }}..HEAD --oneline)
 
           {
-            echo "## PR Metadata"
-            echo ""
             echo "### Commits"
             echo '```'
             echo "$COMMITS"
             echo '```'
             echo ""
-            echo "### Changed Files"
+            echo "### Changed Files (diff)"
             echo '```'
             echo "$STAT"
             echo '```'
@@ -61,17 +58,25 @@ jobs:
           kiro-cli chat \
             --no-interactive \
             --trust-all-tools \
-            "Generate a concise, human-readable summary of this pull request. Read the changed files to understand what was done.
+            "Generate a summary of this repository and the pull request changes.
+
+          First, read ALL source code files in these directories to understand the full codebase:
+          - nodejs-app/ (Express.js API — all files under src/, package.json, .env)
+          - terraform/ (AWS infrastructure — main.tf, variables.tf)
+          - docker/ (Dockerfile, docker-compose.yml)
+
+          Then review the PR diff context below to understand what changed in this specific PR:
 
           ${META}
 
           Format the summary as:
-          1. **What changed** — A 2-3 sentence overview
-          2. **Key changes** — Bullet list of the important modifications
-          3. **Impact** — What parts of the system are affected
-          4. **Testing notes** — What should reviewers test manually
+          1. **Repository overview** — What this repo contains (1-2 sentences)
+          2. **What changed in this PR** — A 2-3 sentence overview of the diff
+          3. **Key changes** — Bullet list of the important modifications
+          4. **Codebase health** — Brief note on any security/quality issues spotted across the full codebase
+          5. **Testing notes** — What should reviewers test manually
 
-          Keep it brief and useful for reviewers who haven't seen the code yet." > /tmp/pr-raw.txt 2>&1 || true
+          Keep it useful for reviewers who haven't seen the code yet." > /tmp/pr-raw.txt 2>&1 || true
 
           node .github/scripts/clean-kiro-output.js /tmp/pr-raw.txt /tmp/pr-summary.md
 

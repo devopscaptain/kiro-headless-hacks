@@ -16,35 +16,11 @@ jobs:
   review:
     name: AI Code Review
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Fetch PR base branch
-        run: git fetch origin ${{ github.event.pull_request.base.ref }}
-
-      - name: Generate diff for context
-        id: diff
-        run: |
-          DIFF=$(git diff origin/${{ github.event.pull_request.base.ref }}...HEAD --stat)
-          echo "## Changed Files" > /tmp/pr-context.txt
-          echo '```' >> /tmp/pr-context.txt
-          echo "$DIFF" >> /tmp/pr-context.txt
-          echo '```' >> /tmp/pr-context.txt
-          echo "" >> /tmp/pr-context.txt
-
-          FULL_DIFF=$(git diff origin/${{ github.event.pull_request.base.ref }}...HEAD)
-          echo "## Full Diff" >> /tmp/pr-context.txt
-          echo '```diff' >> /tmp/pr-context.txt
-          echo "$FULL_DIFF" | head -c 50000 >> /tmp/pr-context.txt
-          echo '```' >> /tmp/pr-context.txt
-
-          FILE_COUNT=$(git diff origin/${{ github.event.pull_request.base.ref }}...HEAD --name-only | wc -l | tr -d ' ')
-          echo "file_count=$FILE_COUNT" >> "$GITHUB_OUTPUT"
 
       - name: Install Kiro CLI
         run: curl -fsSL https://cli.kiro.dev/install | bash
@@ -54,17 +30,20 @@ jobs:
           KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
           KIRO_LOG_NO_COLOR: "1"
         run: |
-          PR_CONTEXT=$(cat /tmp/pr-context.txt)
-
           kiro-cli chat \
             --no-interactive \
             --agent code-reviewer \
             --trust-all-tools \
-            "Review the code changes in this pull request. Here is the diff context:
+            "Perform a full security and code quality review of this entire repository.
 
-          ${PR_CONTEXT}
+          Review ALL source code files across these directories:
+          - nodejs-app/ (Express.js API — server, routes, middleware, database, .env, package.json)
+          - terraform/ (AWS infrastructure — main.tf, variables.tf)
+          - docker/ (Dockerfile, docker-compose.yml)
 
-          Focus on the changed files. Read each changed file fully before reviewing. Provide actionable feedback organized by severity." > /tmp/kiro-raw.txt 2>&1 || true
+          Read every file in each directory. Do NOT limit your review to recently changed files.
+          Check for security vulnerabilities, bugs, performance issues, and code quality problems.
+          Provide actionable feedback organized by severity with file and line references." > /tmp/kiro-raw.txt 2>&1 || true
 
           node .github/scripts/clean-kiro-output.js /tmp/kiro-raw.txt /tmp/kiro-review.md
 
@@ -75,12 +54,11 @@ jobs:
           script: |
             const fs = require('fs');
             const review = fs.readFileSync('/tmp/kiro-review.md', 'utf8');
-            const fileCount = '${{ steps.diff.outputs.file_count }}';
 
             const body = [
               '## 🤖 Kiro Code Review',
               '',
-              `> Reviewed **${fileCount}** changed file(s) using [Kiro Headless Mode](https://kiro.dev/docs/cli/headless/)`,
+              '> Full repository review using [Kiro Headless Mode](https://kiro.dev/docs/cli/headless/)',
               '',
               review,
               '',
