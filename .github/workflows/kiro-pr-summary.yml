@@ -52,7 +52,6 @@ jobs:
         run: curl -fsSL https://cli.kiro.dev/install | bash
 
       - name: Generate PR summary
-        id: summary
         env:
           KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
           KIRO_LOG_NO_COLOR: "1"
@@ -74,15 +73,7 @@ jobs:
 
           Keep it brief and useful for reviewers who haven't seen the code yet." > /tmp/pr-raw.txt 2>&1 || true
 
-          # Strip ANSI escape codes and tool invocation noise
-          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' /tmp/pr-raw.txt \
-            | sed -E \
-              -e '/^(Reading |Batch |↱ |⋮ |Invoking |[0-9]+\. .*kiro_default)/d' \
-              -e '/^(✓ |Successfully |> )/d' \
-              -e '/^\(using tool:/d' \
-              -e '/^- Completed in/d' \
-              -e '/^- Summary:/d' \
-            | sed '/./,$!d' > /tmp/pr-summary.md
+          node .github/scripts/clean-kiro-output.js /tmp/pr-raw.txt /tmp/pr-summary.md
 
       - name: Update PR description
         uses: actions/github-script@v7
@@ -90,12 +81,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            let summary = fs.readFileSync('/tmp/pr-summary.md', 'utf8');
-
-            // Strip any remaining ANSI escape codes
-            summary = summary.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
-            summary = summary.replace(/[━↱⋮]/g, '');
-            summary = summary.replace(/\n{3,}/g, '\n\n');
+            const summary = fs.readFileSync('/tmp/pr-summary.md', 'utf8');
 
             const currentBody = context.payload.pull_request.body || '';
             const marker = '<!-- kiro-summary-start -->';
@@ -113,11 +99,9 @@ jobs:
 
             let newBody;
             if (currentBody.includes(marker)) {
-              // Replace existing Kiro section
               const regex = new RegExp(`${marker}[\\s\\S]*?${endMarker}`);
               newBody = currentBody.replace(regex, kiroSection);
             } else {
-              // Append Kiro section
               newBody = currentBody + '\n\n' + kiroSection;
             }
 
