@@ -44,6 +44,16 @@ Each workflow uses a purpose-built agent defined in `.kiro/agents/`:
 
 Agents follow least-privilege: each one only has the tools it needs. The code reviewer can't modify files. The doc generator can't run shell commands. Edit the agent JSON files to tune prompts and tool access for your team.
 
+## Documentation
+
+Detailed documentation is available in the [`docs/`](docs/) directory:
+
+| Document | Description |
+|----------|-------------|
+| [Architecture Overview](docs/architecture.md) | Project structure, component interaction, data flow, and CI/CD pipeline details |
+| [API Reference](docs/api-reference.md) | All REST endpoints, request/response formats, middleware, and database module |
+| [Infrastructure](docs/infrastructure.md) | Terraform resources, Docker services, and deployment configuration |
+
 ## Architecture
 
 ```
@@ -61,6 +71,31 @@ Weekly schedule
   └── kiro-dependency-audit.yml
         └── dependency-auditor agent → GitHub issue with audit report
 ```
+
+## API Quick Reference
+
+The demo Node.js app exposes these endpoints (see [full API reference](docs/api-reference.md)):
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Authenticate and get JWT |
+| GET | `/api/users` | List all users |
+| GET | `/api/users/:id` | Get user by ID |
+| PUT | `/api/users/:id` | Update user |
+| DELETE | `/api/users/:id` | Delete user |
+| POST | `/api/users/:id/avatar` | Upload avatar |
+| GET | `/api/products` | List all products |
+| GET | `/api/products/search` | Search products |
+| POST | `/api/products` | Create product |
+| GET | `/api/products/stats` | Product stats with ratings |
+
+**Exported modules:**
+
+| Module | Exports | Path |
+|--------|---------|------|
+| Database | `connectDB()`, `query(sql)` | `src/db.js` |
+| Auth middleware | `authenticate`, `requireRole(role)` | `src/middleware/auth.js` |
 
 ## Production Considerations
 
