@@ -119,6 +119,56 @@ This repo includes intentionally flawed sample code across three stacks so the K
 | Reliability | No health checks, no resource limits, no restart policy, `latest` tags |
 | Build quality | No multi-stage build, no `.dockerignore`, `npm install` instead of `npm ci` |
 
+## API Reference
+
+The `nodejs-app/` Express server exposes the following endpoints on port 3000:
+
+### Authentication — `/api/auth`
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/auth/register` | Create account. Body: `{ email, password, name }`. Returns JWT. |
+| `POST` | `/api/auth/login` | Authenticate. Body: `{ email, password }`. Returns JWT + user object. |
+
+### Users — `/api/users`
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/users` | List all users |
+| `GET` | `/api/users/:id` | Get user by ID |
+| `PUT` | `/api/users/:id` | Update user. Body: `{ name, email, role }` |
+| `DELETE` | `/api/users/:id` | Delete user |
+| `POST` | `/api/users/:id/avatar` | Upload avatar (multipart, field: `avatar`) |
+
+### Products — `/api/products`
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/products` | List all products with discounted prices |
+| `GET` | `/api/products/search` | Search. Query: `q`, `category`, `minPrice`, `maxPrice` |
+| `POST` | `/api/products` | Create product. Body: `{ name, price, description, category }` |
+| `GET` | `/api/products/stats` | Product stats with review counts and avg ratings |
+
+### Middleware — `src/middleware/auth.js`
+
+| Export | Signature | Description |
+|--------|-----------|-------------|
+| `authenticate` | `(req, res, next)` | Verifies JWT from `Authorization` header, sets `req.user` |
+| `requireRole` | `(role) → middleware` | Checks `req.user.role` matches the given role |
+
+> **Note:** The auth middleware is defined but not applied to any routes in the demo code.
+
+## Documentation
+
+Detailed documentation for each module is in the [`docs/`](docs/) directory:
+
+| Document | Description |
+|----------|-------------|
+| [`docs/nodejs-app.md`](docs/nodejs-app.md) | Express API — endpoints, modules, dependencies |
+| [`docs/docker.md`](docs/docker.md) | Dockerfile and docker-compose configuration |
+| [`docs/terraform.md`](docs/terraform.md) | AWS infrastructure resources and variables |
+| [`docs/workflows.md`](docs/workflows.md) | GitHub Actions workflows, triggers, and agent configuration |
+
 ## Links
 
 - [Kiro Headless Mode docs](https://kiro.dev/docs/cli/headless/)
