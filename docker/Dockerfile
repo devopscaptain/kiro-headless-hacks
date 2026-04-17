@@ -2,7 +2,7 @@
 FROM node:latest
 
 # ISSUE: Running as root (no USER instruction)
-####
+######
 # ISSUE: Setting secrets as build args — visible in image history
 ARG DB_PASSWORD=SuperSecret123!
 ARG JWT_SECRET=my-super-secret-jwt-key-do-not-share
