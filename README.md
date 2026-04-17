@@ -119,6 +119,18 @@ This repo includes intentionally flawed sample code across three stacks so the K
 | Reliability | No health checks, no resource limits, no restart policy, `latest` tags |
 | Build quality | No multi-stage build, no `.dockerignore`, `npm install` instead of `npm ci` |
 
+## Documentation
+
+Detailed documentation lives in the [`docs/`](docs/) directory:
+
+| Document | Description |
+|----------|-------------|
+| [Architecture Overview](docs/architecture.md) | Repository structure, module interactions, workflow details |
+| [API Reference](docs/api-reference.md) | REST API endpoints, request/response schemas, database and middleware exports |
+| [Infrastructure Reference](docs/infrastructure.md) | Terraform resources, variables, outputs; Docker and Compose configuration |
+| [Agents Reference](docs/agents.md) | Kiro agent definitions, tool permissions, and how to create new agents |
+| [Changelog](docs/CHANGELOG.md) | History of notable changes |
+
 ## Links
 
 - [Kiro Headless Mode docs](https://kiro.dev/docs/cli/headless/)
