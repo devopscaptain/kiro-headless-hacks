@@ -119,6 +119,44 @@ This repo includes intentionally flawed sample code across three stacks so the K
 | Reliability | No health checks, no resource limits, no restart policy, `latest` tags |
 | Build quality | No multi-stage build, no `.dockerignore`, `npm install` instead of `npm ci` |
 
+## Documentation
+
+Detailed documentation lives in the [`docs/`](./docs/) directory:
+
+| Document | Description |
+|----------|-------------|
+| [API Reference](./docs/api-reference.md) | All REST endpoints, parameters, request/response formats, and examples |
+| [Architecture Overview](./docs/architecture.md) | Project structure, component diagram, module interactions, data flow |
+| [Infrastructure](./docs/infrastructure.md) | Docker and Terraform resource details, configuration, and usage |
+| [Setup Guide](./docs/setup.md) | Prerequisites, local development, available scripts, deployment |
+
+### API Surface Summary
+
+The Express.js API exposes the following endpoints on port 3000:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Authenticate and receive JWT |
+| GET | `/api/users` | List all users |
+| GET | `/api/users/:id` | Get user by ID |
+| PUT | `/api/users/:id` | Update user |
+| DELETE | `/api/users/:id` | Delete user |
+| POST | `/api/users/:id/avatar` | Upload user avatar |
+| GET | `/api/products` | List all products |
+| GET | `/api/products/search` | Search products with filters |
+| POST | `/api/products` | Create a product |
+| GET | `/api/products/stats` | Product statistics with ratings |
+
+### Middleware Exports
+
+| Function | Module | Description |
+|----------|--------|-------------|
+| `authenticate` | `middleware/auth.js` | JWT verification middleware |
+| `requireRole(role)` | `middleware/auth.js` | Role-based authorization factory |
+| `connectDB` | `db.js` | Establish MySQL connection with retry |
+| `query(sql)` | `db.js` | Execute raw SQL, returns Promise |
+
 ## Links
 
 - [Kiro Headless Mode docs](https://kiro.dev/docs/cli/headless/)
