@@ -46,21 +46,17 @@ Agents follow least-privilege: each one only has the tools it needs. The code re
 
 ## Architecture
 
-```
-PR opened/updated
-  ├── kiro-code-review.yml
-  │     └── code-reviewer agent → PR comment with findings
-  └── kiro-pr-summary.yml
-        └── default agent → PR description updated with summary
+### Code Review Workflow
+![Code Review Workflow](diagrams/kiro-code-review-workflow.png)
 
-Push to main
-  └── kiro-doc-gen.yml
-        └── doc-generator agent → new PR with doc changes
+### PR Summary Workflow
+![PR Summary Workflow](diagrams/kiro-pr-summary-workflow.png)
 
-Weekly schedule
-  └── kiro-dependency-audit.yml
-        └── dependency-auditor agent → GitHub issue with audit report
-```
+### Documentation Generator Workflow
+![Doc Generator Workflow](diagrams/kiro-doc-gen-workflow.png)
+
+### Dependency Audit Workflow
+![Dependency Audit Workflow](diagrams/kiro-dependency-audit-workflow.png)
 
 ## Production Considerations
 
